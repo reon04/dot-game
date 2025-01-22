@@ -2,77 +2,134 @@
 p5.disableFriendlyErrors = true;
 
 // global vars
+let picture_mode = true;
 let img, cutImg;
 let minSize;
 let spots = [];
-let px, py;
 let prevFrame = -15;
+let xoffset;
+let yoffset = 35;
+let inputUrlInput, convertButton, outputUrlInput, copyButton, openButton;
+let corsAnywhereDomain = "";
 
 function preload() {
-  //img = loadImage("https://upload.wikimedia.org/wikipedia/commons/d/d9/Kodaki_fuji_frm_shojinko.jpg");
-  //img = loadImage("https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Grosser_Panda.JPG/640px-Grosser_Panda.JPG");
-  //img = loadImage('https://t3.ftcdn.net/jpg/02/70/97/22/360_F_270972208_0wCfv9Nv4pOWbMiHyyHW6uKrRc613NCu.jpg');
-  img = loadImage('https://etxdj2omrj7.exactdn.com/wp-content/uploads/2023/05/baeumer_fabian_2017_01.jpg?strip=all&lossy=1&ssl=1');
+  imageURL = getURLParams()['img'];
+  example_mode = getURLParams()['example'];
+  if (imageURL) img = loadImage(atob(imageURL));
+  else if (example_mode == '1') img = loadImage('example.jpg');
+  else picture_mode = false;
 }
 
 function setup() {
   // setup general things
+  select('body').style('width: '+windowWidth+'px;'+'height: '+windowHeight+'px;');
   disableScroll();
   createCanvas(windowWidth, windowHeight);
   frameRate(30);
   ellipseMode(CENTER);
   noStroke();
+  let homeDiv = createDiv();
+  homeDiv.child(createA("/", "Home").style('font-size: 15px; text-decoration: none'));
+  homeDiv.style('width: 100px; height: auto; position: absolute; left: '+(windowWidth/2-140)+'px; bottom: '+(yoffset/2-9)+'px; text-align: center;');
+  let exampleDiv = createDiv();
+  exampleDiv.child(createA("/?example=1", "Example").style('font-size: 15px; text-decoration: none'));
+  exampleDiv.style('width: 100px; height: auto; position: absolute; right: '+(windowWidth/2-140)+'px; bottom: '+(yoffset/2-9)+'px; text-align: center;');
   
-  // cut and resize image
-  minSize = min(width, height);
-  let imgMinSize = min(img.width, img.height);
-  cutImg = img.get(img.width/2-imgMinSize/2, img.height/2-imgMinSize/2, imgMinSize, imgMinSize);
-  cutImg.resize(minSize, minSize);
-  cutImg.loadPixels();
+  if (picture_mode) {
+    // cut and resize image
+    minSize = min(width, height);
+    let imgMinSize = min(img.width, img.height);
+    cutImg = img.get(img.width/2-imgMinSize/2, img.height/2-imgMinSize/2, imgMinSize, imgMinSize);
+    cutImg.resize(minSize, minSize);
+    cutImg.loadPixels();
 
-  // generate spots
-  let spot = generateSpots(width/2, height/2, 0.9*minSize, 8);
-  spot.show = true;
-  
-  // init previous mouse position
-  px = mouseX;
-  py = mouseY;
+    // generate spots
+    let spot = generateSpots(width/2, (height-yoffset)/2, 0.9*(minSize-yoffset), 8);
+    spot.show = true;
+  }
+  else {
+    // create DOM objects
+    xoffset = windowWidth/2-200;
+    inputUrlInput = createInput();
+    inputUrlInput.style('position: absolute; left: '+(xoffset+10)+'px; top: 74px; width: 310px;');
+    convertButton = createButton('convert');
+    convertButton.style('position: absolute; left: '+(xoffset+330)+'px; top: 74px; width: 60px;');
+    convertButton.mousePressed(convertButtonPressed);
+    outputUrlInput = createInput();
+    outputUrlInput.style('position: absolute; left: '+(xoffset+10)+'px; top: 127px; width: 277px;');
+    outputUrlInput.attribute('disabled', '');
+    copyButton = createButton('copy');
+    copyButton.style('position: absolute; left: '+(xoffset+297)+'px; top: 127px; width: 45px;');
+    copyButton.attribute('disabled', '');
+    copyButton.mousePressed(() => {navigator.clipboard.writeText(outputUrlInput.value());});
+    openButton = createButton('open');
+    openButton.style('position: absolute; left: '+(xoffset+345)+'px; top: 127px; width: 45px;');
+    openButton.attribute('disabled', '');
+    openButton.mousePressed(() => {window.location.href = outputUrlInput.value()});
+  }
 }
 
 function draw() {
   // draw new background
   background(237, 214, 154);
+  drawLine(0, height-yoffset+1, width, height-yoffset+1, 2, [191, 172, 124]);
   
-  // check for autosolve
-  if (window.location.hash.substring(1) == "solve") if (frameCount > prevFrame + 15) {
-    prevFrame = frameCount;
-    for (let spot of spots) spot.auto();
+  if (picture_mode) {
+    // check for autosolve
+    if (window.location.hash.substring(1) == "solve") if (frameCount > prevFrame + 15) {
+      prevFrame = frameCount;
+      for (let spot of spots) spot.auto();
+    }
+
+    // update and draw spots
+    for (let spot of spots) spot.update(pmouseX, pmouseY, mouseX, mouseY);
+    for (let spot of spots) spot.draw();
   }
-  
-  // update and draw spots
-  //let t1 = millis();
-  for (let spot of spots) spot.update(px, py, mouseX, mouseY);
-  //let t2 = millis();
-  for (let spot of spots) spot.draw();
-  //let t3 = millis();
-  //print("update: " + (t2-t1) + "ms");
-  //print("draw: " + (t3-t2) + "ms");
-  //print("both: " + (t3-t1) + "ms");
-  //print("frame rate: " + frameRate() + "fps");
-  
-  // store mouse position as previous mouse position for next loop iteration
-  px = mouseX;
-  py = mouseY;
+  else {
+    // draw text and lines
+    drawLine(xoffset+5, 5, xoffset+395, 5);
+    drawLine(xoffset+5, 44, xoffset+395, 44);
+    drawLine(xoffset+5, 160, xoffset+395, 160);
+    drawLine(xoffset+5, 5, xoffset+5, 160);
+    drawLine(xoffset+395, 5, xoffset+395, 160);
+    drawText("Dot Game", xoffset+200, 36, 32, 0, CENTER);
+    drawText("picture URL:", xoffset+11, 67, 18);
+    drawText("output URL:", xoffset+11, 120, 18);
+  }
 }
 
-function mousePressed() {
-  for (let spot of spots) spot.auto();
+function drawText(txt="", x=0, y=0, size=12, color=0, align=LEFT, style=NORMAL) {
+  noStroke();
+  fill(color);
+  textSize(size);
+  textAlign(align, BASELINE);
+  textStyle(style);
+  text(txt, x, y);
+  return textWidth(txt);
 }
 
-function touchStarted() {
-  // ignore old touch position if screen is newly touched
-  px = mouseX;
-  py = mouseY;
+function drawLine(x0, y0, x1, y1, thick=3, col=0) {
+  strokeWeight(thick);
+  stroke(col);
+  line(x0, y0, x1, y1);
+}
+
+//function mousePressed() {
+//  if (picture_mode) for (let spot of spots) spot.auto();
+//}
+
+function convertButtonPressed() {
+  copyButton.attribute('disabled', '');
+  openButton.attribute('disabled', '');
+  outputUrlInput.value('...');
+  url = inputUrlInput.value();
+  loadImage(corsAnywhereDomain + url, (img) => {
+    outputUrlInput.value(window.location.protocol + "//" + window.location.host + "?img=" + btoa(url));
+    copyButton.removeAttribute('disabled');
+    openButton.removeAttribute('disabled');
+  }, (e) => {
+    outputUrlInput.value("ERROR: image URL could not be loaded");
+  });
 }
 
 function generateSpots(x, y, d, n) {
