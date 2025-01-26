@@ -10,7 +10,7 @@ let prevFrame = -15;
 let xoffset;
 let yoffset = 35;
 let inputUrlInput, convertButton, outputUrlInput, copyButton, openButton;
-let corsAnywhereDomain = "";
+let corsAnywhereURL = "?replace_label_cors_anywhere_url?";
 
 function preload() {
   imageURL = getURLParams()['img'];
@@ -123,7 +123,7 @@ function convertButtonPressed() {
   openButton.attribute('disabled', '');
   outputUrlInput.value('...');
   url = inputUrlInput.value();
-  loadImage(corsAnywhereDomain + url, (img) => {
+  loadImage(corsAnywhereURL + url, (img) => {
     outputUrlInput.value(window.location.protocol + "//" + window.location.host + "?img=" + btoa(url));
     copyButton.removeAttribute('disabled');
     openButton.removeAttribute('disabled');
