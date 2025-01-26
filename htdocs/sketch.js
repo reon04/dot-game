@@ -15,7 +15,7 @@ let corsAnywhereURL = "?replace_label_cors_anywhere_url?";
 function preload() {
   imageURL = getURLParams()['img'];
   example_mode = getURLParams()['example'];
-  if (imageURL) img = loadImage(atob(imageURL));
+  if (imageURL) img = loadImage(corsAnywhereURL + atob(imageURL));
   else if (example_mode == '1') img = loadImage('example.jpg');
   else picture_mode = false;
 }
