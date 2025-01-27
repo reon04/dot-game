@@ -33,11 +33,14 @@ class Spot {
   
   draw() {
     if (this.show) {
-      let l = Math.min(dst(this.cx, this.cy, this.x, this.y) / this.parentDst, 1);
-      let ll = Math.sqrt(l);
-      this.ccol = [ll*this.parentCol[0]-(ll-1)*this.col[0], ll*this.parentCol[1]-(ll-1)*this.col[1], ll*this.parentCol[2]-(ll-1)*this.col[2]];
-      this.cd = l * (this.parentD - this.d) + this.d;
-      drawCircle(this.cx, this.cy, this.cd*(1+((minSize/250)/(this.cd*this.cd))), this.ccol);
+      if (this.anim) {
+        let l = Math.min(dst(this.cx, this.cy, this.x, this.y) / this.parentDst, 1);
+        let ll = Math.sqrt(l);
+        this.ccol = [ll*this.parentCol[0]-(ll-1)*this.col[0], ll*this.parentCol[1]-(ll-1)*this.col[1], ll*this.parentCol[2]-(ll-1)*this.col[2]];
+        this.cd = l * (this.parentD - this.d) + this.d;
+        drawCircle(this.cx, this.cy, this.cd*(1+((minSize/250)/(this.cd*this.cd))), this.ccol);
+      }
+      else drawCircle(this.x, this.y, this.d, this.col);
     }
   }
   
@@ -63,7 +66,7 @@ class Spot {
       let c = f.dot(f)-(this.cd/2)*(this.cd/2);
       let discrim = b*b-4*a*c;
       if (discrim >= 0) {
-        discrim = sqrt(discrim);
+        discrim = Math.sqrt(discrim);
         let t1 = (-b - discrim)/(2*a);
         let t2 = (-b + discrim)/(2*a);
         if((t1 >= 0 && t1 <= 1) || (t2 >= 0 && t2 <= 1) && !this.over) this.revealChld();

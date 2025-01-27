@@ -45,7 +45,7 @@ function setup() {
 
     // generate spots
     let spot = generateSpots(width/2, (height-yoffset)/2, 0.9*(minSize-yoffset), 8);
-    spot.show = true;
+    spot.reveal(width/2, 0, 1, spot.col);
   }
   else {
     // create DOM objects
