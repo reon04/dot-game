@@ -10,12 +10,12 @@ let prevFrame = -15;
 let xoffset;
 let yoffset = 35;
 let inputUrlInput, convertButton, outputUrlInput, copyButton, openButton;
-let corsAnywhereURL = "?replace_label_cors_anywhere_url?";
+let corsProxyURL = "?replace_label_cors_proxy_url?";
 
 function preload() {
   imageURL = getURLParams()['img'];
   example_mode = getURLParams()['example'];
-  if (imageURL) img = loadImage(corsAnywhereURL + atob(imageURL));
+  if (imageURL) img = loadImage(corsProxyURL ? corsProxyURL + encodeURIComponent(atob(imageURL)) : atob(imageURL));
   else if (example_mode == '1') img = loadImage('example.jpg');
   else picture_mode = false;
 }
@@ -123,7 +123,7 @@ function convertButtonPressed() {
   openButton.attribute('disabled', '');
   outputUrlInput.value('...');
   url = inputUrlInput.value();
-  loadImage(corsAnywhereURL + url, (img) => {
+  loadImage(corsProxyURL ? corsProxyURL + encodeURIComponent(url) : url, (img) => {
     outputUrlInput.value(window.location.protocol + "//" + window.location.host + "?img=" + btoa(url));
     copyButton.removeAttribute('disabled');
     openButton.removeAttribute('disabled');
